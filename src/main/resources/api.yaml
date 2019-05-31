@@ -1,0 +1,160 @@
+# Copyright 2019 National Association of Insurance Commissioners
+openapi: 3.0.0
+info:
+  title: NAIC Okta POC Service API
+  description: NAIC Okta POC application service API
+  version: 1.0.0
+  contact:
+    email: OPTinsStaff@naic.org
+    name: NAIC - Filing Solutions Development Group - Okta POC
+  license:
+    name: NAIC General Internal Use License
+tags:
+  - name: Users
+    description: Operations about Okta User Service
+security:
+  - optinsFlow:
+      - openid
+      - profile
+      - email
+paths:
+  '/users/':
+    get:
+      tags:
+        - Users
+      summary: Fetch available users from Okta.
+      description: Fetch available users from Okta
+      security:
+        - optinsFlow:
+          - opeinid
+          - profile
+          - email
+      operationId: fetchUsers
+      parameters:
+        - in: query
+          name: firstName
+          description: "Search by first name"
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+            pattern: '[a-zA-Z0-9\._\-@]{1,200}'
+        - in: query
+          name: lastName
+          description: "Search by last name"
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+            pattern: '[a-zA-Z0-9\._\-@]{1,200}'
+        - in: query
+          name: email
+          description: "Search by email name"
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+            pattern: '[a-zA-Z0-9\._\-@]{1,200}'
+        - in: query
+          name: login
+          description: "Search by login name"
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+            pattern: '[a-zA-Z0-9\._\-@]{1,200}'
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+    post:
+      tags:
+      - Users
+      summary: create user in okta.
+      description: Create user in okta
+      security:
+      - optinsFlow:
+        - opeinid
+        - profile
+        - email
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+        description: Creating a user
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+
+components:
+  securitySchemes:
+    optinsFlow:
+      type: oauth2
+      description: This API uses OAuth 2 with the implicit grant flow.
+      flows:
+        implicit:   # <---- OAuth flow(authorizationCode, implicit, password or clientCredentials)
+          authorizationUrl: https://naic-app.oktapreview.com/oauth2/default/authorize
+          scopes:
+            openid: OpenId scope
+            profile: Profile scope
+            email: Email scope
+  schemas:
+    User:
+      title: User detail
+      description: User detail
+      type: object
+      properties:
+        firstName:
+          title: firstName
+          description: firstName
+          type: string
+          minLength: 1
+          maxLength: 200
+        lastName:
+          title: lastName
+          description: lastName
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          title: email
+          description: email
+          type: string
+          minLength: 1
+          maxLength: 200
+        loginName:
+          title: loginName
+          description: loginName
+          type: string
+          minLength: 1
+          maxLength: 200
+    UserDto:
+      title: User DTO
+      description: User DTO
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        total:
+          title: total number of records
+          description: total number of records
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 1000
